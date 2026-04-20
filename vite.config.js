@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
+    allowedHosts: ['.replit.dev', '.repl.co'],
     proxy: {
       '/ws': {
         target: 'ws://localhost:3001',
