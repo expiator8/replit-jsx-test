@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Plus, Trash2, Check, MapPin, Copy, ChevronRight, RotateCcw,
   ExternalLink, ArrowRight, X,
 } from "lucide-react";
+import { DEFAULT_DATA } from "../server/defaultData.js";
 
 const ADDRESS = "경기도 광주시 퇴촌면 원당길43번길 12";
 
@@ -41,82 +42,6 @@ const openExternal = (url) => {
   try { window.open(url, "_blank", "noopener,noreferrer"); } catch (e) {}
 };
 
-const DEFAULT_DATA = {
-  tripTitle: "우리끼리 리트릿",
-  tagline: "A quiet weekend away",
-  startDate: "",
-  endDate: "",
-  participants: [
-    { id: 1, name: "", role: "호스트", phone: "", note: "" },
-    { id: 2, name: "", role: "총무", phone: "", note: "" },
-    { id: 3, name: "", role: "요리", phone: "", note: "" },
-    { id: 4, name: "", role: "사진", phone: "", note: "" },
-    { id: 5, name: "", role: "플레이리스트", phone: "", note: "" },
-    { id: 6, name: "", role: "참가자", phone: "", note: "" },
-    { id: 7, name: "", role: "참가자", phone: "", note: "" },
-    { id: 8, name: "", role: "참가자", phone: "", note: "" },
-  ],
-  schedule: {
-    day1: [
-      { id: 11, time: "15:00", activity: "체크인 · 짐 풀기", leader: "", linkedPlaceId: null },
-      { id: 12, time: "16:00", activity: "동네 산책 · 마트 장보기", leader: "", linkedPlaceId: null },
-      { id: 13, time: "18:30", activity: "바베큐 저녁", leader: "", linkedPlaceId: null },
-      { id: 14, time: "21:00", activity: "보드게임 · 수다 타임", leader: "", linkedPlaceId: null },
-      { id: 15, time: "23:30", activity: "야식 · 와인 한 잔", leader: "", linkedPlaceId: null },
-      { id: 16, time: "01:30", activity: "취침", leader: "", linkedPlaceId: null },
-    ],
-    day2: [
-      { id: 21, time: "09:30", activity: "늦은 기상 · 커피", leader: "", linkedPlaceId: null },
-      { id: 22, time: "10:30", activity: "브런치", leader: "", linkedPlaceId: null },
-      { id: 23, time: "12:00", activity: "팔당호 드라이브 · 카페", leader: "", linkedPlaceId: null },
-      { id: 24, time: "14:00", activity: "점심 (근처 맛집)", leader: "", linkedPlaceId: null },
-      { id: 25, time: "16:00", activity: "숙소 정리", leader: "", linkedPlaceId: null },
-      { id: 26, time: "17:00", activity: "해산", leader: "", linkedPlaceId: null },
-    ],
-  },
-  packingGroup: [
-    { id: 101, name: "블루투스 스피커", assignee: "", checked: false },
-    { id: 102, name: "보드게임", assignee: "", checked: false },
-    { id: 103, name: "인스탁스 / 필름 카메라", assignee: "", checked: false },
-    { id: 104, name: "고기 · 식재료", assignee: "", checked: false },
-    { id: 105, name: "와인 · 맥주", assignee: "", checked: false },
-    { id: 106, name: "간식 · 안주", assignee: "", checked: false },
-    { id: 107, name: "멀티탭 · 일회용품", assignee: "", checked: false },
-    { id: 108, name: "쓰레기봉투 · 분리수거 봉투", assignee: "", checked: false },
-  ],
-  packingPersonal: [
-    { id: 201, name: "세면도구 · 수건", checked: false },
-    { id: 202, name: "실내복 · 잠옷", checked: false },
-    { id: 203, name: "갈아입을 옷", checked: false },
-    { id: 204, name: "편한 운동화", checked: false },
-    { id: 205, name: "충전기 · 보조배터리", checked: false },
-    { id: 206, name: "마스크팩 · 스킨케어", checked: false },
-    { id: 207, name: "가벼운 외투 (밤엔 쌀쌀)", checked: false },
-    { id: 208, name: "슬리퍼", checked: false },
-  ],
-  meals: [
-    { id: 301, when: "DAY 1 · 저녁", menu: "바베큐", chef: "", note: "삼겹살, 목살, 쌈채소, 버섯, 공깃밥" },
-    { id: 302, when: "DAY 1 · 야식", menu: "라면 & 치즈", chef: "", note: "가볍게" },
-    { id: 303, when: "DAY 2 · 브런치", menu: "토스트 & 커피", chef: "", note: "에그, 아보카도 등" },
-    { id: 304, when: "DAY 2 · 점심", menu: "근처 맛집", chef: "외식", note: "식당 탭에서 확정" },
-  ],
-  places: { food: [], cafe: [], play: [] },
-  expenses: [
-    { id: 401, item: "숙소비", amount: 0, payer: "" },
-    { id: 402, item: "마트 장보기", amount: 0, payer: "" },
-    { id: 403, item: "주류 · 간식", amount: 0, payer: "" },
-  ],
-  feePerPerson: 50000,
-  planHeadline: "낮엔 호숫가,\n밤엔 우리들의 거실.",
-  planItems: [
-    "체크인 후 동네 한 바퀴. 마트에 들러 저녁거리를 산다.",
-    "마당에서 바베큐. 해가 완전히 지기 전에 불을 피운다.",
-    "밤엔 보드게임이나 영화. 누가 먼저 잠드는지 시합.",
-    "늦게 일어나 커피. 팔당호 드라이브와 카페 투어.",
-    "정오의 맛집 한 곳을 정하고, 배부르게 먹고 해산.",
-  ],
-};
-
 const SECTIONS = [
   { key: "home",     num: "01", label: "Overview",  kr: "홈" },
   { key: "people",   num: "02", label: "Guests",    kr: "참가자" },
@@ -132,93 +57,74 @@ export default function RetreatPlanner() {
   const [tab, setTab] = useState("home");
   const [data, setData] = useState(DEFAULT_DATA);
   const [toast, setToast] = useState("");
+  const [connected, setConnected] = useState(false);
 
-  const [lastSynced, setLastSynced] = useState(null);
+  const wsRef = useRef(null);
+  const versionRef = useRef(0);
+  const applyingRemote = useRef(false);
+  const reconnectTimer = useRef(null);
 
-  // 로드: 개인 저장소를 우선으로 읽음(팝업 없음) → 없으면 공유 저장소에서 1회(팝업 1회)
+  // WebSocket 연결 + 실시간 동기화
   useEffect(() => {
-    (async () => {
-      let loaded = null;
-      let fromShared = false;
+    let closed = false;
 
-      // 1) 개인 저장소 (팝업 없음)
-      try {
-        const personalRes = await window.storage.get("retreat-plan-v4", false);
-        if (personalRes?.value) loaded = JSON.parse(personalRes.value);
-      } catch (e) {}
+    const connect = () => {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      const ws = new WebSocket(`${proto}//${location.host}/ws`);
+      wsRef.current = ws;
 
-      // 2) 개인에 없으면 공유에서 최초 1회만
-      if (!loaded) {
-        try {
-          const sharedRes = await window.storage.get("retreat-plan-v4", true);
-          if (sharedRes?.value) {
-            loaded = JSON.parse(sharedRes.value);
-            fromShared = true;
-            // 공유→개인 캐싱 (다음 방문부터 팝업 X)
-            try { await window.storage.set("retreat-plan-v4", JSON.stringify(loaded), false); } catch (e) {}
-          }
-        } catch (e) {}
-      }
+      ws.onopen = () => setConnected(true);
 
-      if (loaded) {
-        const merged = {
-          ...DEFAULT_DATA,
-          ...loaded,
-          places: { ...DEFAULT_DATA.places, ...(loaded.places || {}) },
-        };
-        setData(merged);
-        if (fromShared) setLastSynced(JSON.stringify(merged));
-      }
-      setLoading(false);
-    })();
+      ws.onmessage = (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+        if (msg.type === "sync") {
+          versionRef.current = msg.version;
+          applyingRemote.current = true;
+          setData({
+            ...DEFAULT_DATA,
+            ...msg.data,
+            places: { ...DEFAULT_DATA.places, ...(msg.data.places || {}) },
+          });
+          setLoading(false);
+          queueMicrotask(() => { applyingRemote.current = false; });
+        }
+      };
+
+      ws.onclose = () => {
+        setConnected(false);
+        if (!closed) {
+          reconnectTimer.current = setTimeout(connect, 3000);
+        }
+      };
+
+      ws.onerror = () => { try { ws.close(); } catch {} };
+    };
+
+    connect();
+
+    return () => {
+      closed = true;
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+      try { wsRef.current?.close(); } catch {}
+    };
   }, []);
 
-  // 자동저장은 개인 저장소로만 (팝업 없음)
+  // 로컬 변경을 서버로 전송 (debounce 400ms)
   useEffect(() => {
-    if (loading) return;
-    const t = setTimeout(async () => {
-      try { await window.storage.set("retreat-plan-v4", JSON.stringify(data), false); }
-      catch (e) {}
+    if (loading || applyingRemote.current) return;
+    const t = setTimeout(() => {
+      const ws = wsRef.current;
+      if (ws?.readyState === 1) {
+        ws.send(JSON.stringify({
+          type: "update",
+          data,
+          baseVersion: versionRef.current,
+        }));
+      }
     }, 400);
     return () => clearTimeout(t);
   }, [data, loading]);
-
-  // 공유 저장소에서 최신 가져오기 (명시적 · 팝업 1회)
-  const pull = async () => {
-    try {
-      const res = await window.storage.get("retreat-plan-v4", true);
-      if (res?.value) {
-        const parsed = JSON.parse(res.value);
-        const merged = {
-          ...DEFAULT_DATA,
-          ...parsed,
-          places: { ...DEFAULT_DATA.places, ...(parsed.places || {}) },
-        };
-        setData(merged);
-        setLastSynced(JSON.stringify(merged));
-        showToast("최신 내용을 불러왔어요");
-      } else {
-        showToast("공유 저장소가 비어있어요 — 호스트가 먼저 Publish 필요");
-      }
-    } catch (e) {
-      showToast("공유 저장소가 비어있어요 — 호스트가 먼저 Publish 필요");
-    }
-  };
-
-  // 내 변경사항을 팀에게 공유 (명시적 · 팝업 1회)
-  const publish = async () => {
-    try {
-      const json = JSON.stringify(data);
-      await window.storage.set("retreat-plan-v4", json, true);
-      setLastSynced(json);
-      showToast("팀 전체에 공유됐어요 ✓");
-    } catch (e) { showToast("공유 실패 — 잠시 후 다시 시도"); }
-  };
-
-  // 미공유 변경사항 여부
-  const hasUnsyncedChanges = useMemo(() => {
-    return lastSynced === null || JSON.stringify(data) !== lastSynced;
-  }, [data, lastSynced]);
 
   // Data 모달 (export/import 공용)
   // { mode: 'export' | 'import', text: string } | null
@@ -244,7 +150,7 @@ export default function RetreatPlanner() {
         places: { ...DEFAULT_DATA.places, ...(parsed.places || {}) },
       });
       setDataModal(null);
-      showToast("불러오기 완료 · Publish 버튼으로 팀에 공유");
+      showToast("불러오기 완료 · 팀에 자동 공유됨");
     } catch (err) {
       showToast("JSON 형식이 올바르지 않아요");
     }
@@ -468,27 +374,13 @@ export default function RetreatPlanner() {
         <div className="flex items-center gap-2">
           <span
             className="inline-block w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: hasUnsyncedChanges ? "#C56B3F" : "#0A0A0A" }}
+            style={{ backgroundColor: connected ? "#0A0A0A" : "#C56B3F" }}
           />
           <span className="cap">
-            {hasUnsyncedChanges ? "Local · 미공유 변경사항" : "Synced · 최신"}
+            {connected ? "Live · 실시간 공유 중" : "Offline · 재연결 중"}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={publish}
-            className="ink-btn flex items-center gap-2 px-3 py-1.5 rounded-full text-xs f-body-m"
-            title="내 변경사항을 팀 전체에 공유"
-          >
-            <ArrowRight size={11} className="-rotate-90" /> Publish
-          </button>
-          <button
-            onClick={pull}
-            className="ghost-btn flex items-center gap-2 px-3 py-1.5 rounded-full text-xs f-body-m"
-            title="팀의 최신 변경사항 가져오기"
-          >
-            <ArrowRight size={11} className="rotate-90" /> Pull
-          </button>
           <button onClick={exportJSON} className="ghost-btn flex items-center gap-2 px-3 py-1.5 rounded-full text-xs f-body-m" title="JSON 파일로 백업">
             Export
           </button>
@@ -496,10 +388,9 @@ export default function RetreatPlanner() {
             Import
           </button>
           <button
-            onClick={async () => {
-              if (!confirm("내 로컬 내용만 초기화합니다 (공유 저장소는 그대로). 계속할까요?")) return;
+            onClick={() => {
+              if (!confirm("전체 데이터를 초기화합니다. 모든 참가자에게 즉시 반영됩니다. 계속할까요?")) return;
               setData(DEFAULT_DATA);
-              try { await window.storage.set("retreat-plan-v4", JSON.stringify(DEFAULT_DATA), false); } catch (e) {}
             }}
             className="ghost-btn flex items-center gap-2 px-3 py-1.5 rounded-full text-xs f-body-m"
           >
